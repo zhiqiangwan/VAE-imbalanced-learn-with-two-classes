@@ -24,7 +24,7 @@ import pandas as pd
 #local application/library specific imports
 
 
-directory_generate_data = '../data/' #'../data_128/' #
+directory_generate_data = '../data_384/' #'../data_128/' #
 
 #input data processing
 input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
@@ -38,7 +38,7 @@ with h5py.File(input_h5,'r') as hf:
     tem = hf.get('test_refined_labels')
     test_refined_labels = np.array(tem)
 
-num_classes = 10
+num_classes = 2
 image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)  #   
 image_train = np.reshape(train_refined_images, image_shape_for_train)
 label_train = keras.utils.to_categorical(train_refined_labels, num_classes)

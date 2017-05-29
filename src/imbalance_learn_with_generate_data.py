@@ -24,7 +24,7 @@ import pandas as pd
 #local application/library specific imports
 
 
-directory_generate_data = '../data/' #'../data_128/' #
+directory_generate_data = '../data_384/' #'../data_128/' #
 
 GENERATE_DATA_TYPE = 'VAE' #'copy' # 'GAN'#
 #input data processing
@@ -61,7 +61,7 @@ elif GENERATE_DATA_TYPE == 'GAN':
         tem = hf.get('GAN_labels')
         generate_labels = np.array(tem)         
         
-num_classes = 10
+num_classes = 2
 image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)   # 
 image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , image_shape_for_train)
 label_train = keras.utils.to_categorical( np.concatenate( (train_refined_labels, generate_labels) ) , num_classes)

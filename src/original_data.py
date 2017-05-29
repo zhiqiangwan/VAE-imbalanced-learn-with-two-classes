@@ -29,11 +29,11 @@ flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 5600, "batch size of generated images")
+flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
-directory_generate_data = '../data_128/' #'../data/' #
+directory_generate_data = '../data_384/' #'../data_128/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -47,41 +47,56 @@ mnist_train_labels = mnist_all.train.labels
 mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
-refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_minority_label = 128
+num_minority_label = 384
 num_majority_label = 5000
-num_train_per_label = [num_minority_label, num_majority_label]*5
-train_refined_label_idx = np.array([], dtype = np.uint8)
-test_refined_label_idx = np.array([], dtype = np.uint8)
-for idx, label_value in enumerate(refined_label):
-    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_train_per_label[idx]]
-    train_refined_label_idx = np.append( train_refined_label_idx,  refined_one_label_idx)
-    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
-    test_refined_label_idx = np.append(test_refined_label_idx, test_refined_one_label_idx)
 
-#odd_labels = [1, 3, 5, 7, 9]
-#even_labels = [0, 2, 4, 6, 8]
-#num_train_per_label = [400, 5000] #odd labels are minority
-##two_class_labels = [0, 1]
-#
-#odd_label_idx = np.array([], dtype = np.uint8)
-#odd_test_label_idx = np.array([], dtype = np.uint8)
-#for idx, label_value in enumerate(odd_labels):
-#    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_train_per_label[0]]
-#    odd_label_idx = np.append(odd_label_idx, refined_one_label_idx)
+#refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+#num_train_per_label = [num_minority_label, num_majority_label]*5
+#train_refined_label_idx = np.array([], dtype = np.uint8)
+#test_refined_label_idx = np.array([], dtype = np.uint8)
+#for idx, label_value in enumerate(refined_label):
+#    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_train_per_label[idx]]
+#    train_refined_label_idx = np.append( train_refined_label_idx,  refined_one_label_idx)
 #    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
-#    odd_test_label_idx = np.append(odd_test_label_idx, test_refined_one_label_idx)
-#
-#odd_refined_images = mnist_train_images[odd_label_idx, :]
-##odd_refined_labels = two_class_labels[0]*np.ones((odd_refined_images.shape[0]), dtype=np.uint8)
-#odd_test_refined_images = mnist_test_images[odd_test_label_idx, :]
-##odd_test_refined_labels = two_class_labels[0]*np.ones((odd_test_refined_images.shape[0]), dtype=np.uint8)
+#    test_refined_label_idx = np.append(test_refined_label_idx, test_refined_one_label_idx)
 
 
-train_refined_images = mnist_train_images[train_refined_label_idx, :]
-train_refined_labels = mnist_train_labels[train_refined_label_idx]
-test_refined_images = mnist_test_images[test_refined_label_idx, :]
-test_refined_labels = mnist_test_labels[test_refined_label_idx]
+odd_labels = [1, 3, 5, 7, 9]
+even_labels = [0, 2, 4, 6, 8]
+num_train_per_label = [num_majority_label, num_minority_label] #even labels are minority
+two_class_labels = [0, 1]
+
+odd_label_idx = np.array([], dtype = np.uint8)
+odd_test_label_idx = np.array([], dtype = np.uint8)
+for idx, label_value in enumerate(odd_labels):
+    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_majority_label]
+    odd_label_idx = np.append(odd_label_idx, refined_one_label_idx)
+    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
+    odd_test_label_idx = np.append(odd_test_label_idx, test_refined_one_label_idx)
+
+odd_refined_images = mnist_train_images[odd_label_idx, :]
+odd_refined_labels = two_class_labels[0]*np.ones((odd_refined_images.shape[0]), dtype=np.uint8)
+odd_test_refined_images = mnist_test_images[odd_test_label_idx, :]
+odd_test_refined_labels = two_class_labels[0]*np.ones((odd_test_refined_images.shape[0]), dtype=np.uint8)
+
+even_label_idx = np.array([], dtype = np.uint8)
+even_test_label_idx = np.array([], dtype = np.uint8)
+for idx, label_value in enumerate(even_labels):
+    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_minority_label]
+    even_label_idx = np.append(even_label_idx, refined_one_label_idx)
+    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
+    even_test_label_idx = np.append(even_test_label_idx, test_refined_one_label_idx)
+
+even_refined_images = mnist_train_images[even_label_idx, :]
+even_refined_labels = two_class_labels[1]*np.ones((even_refined_images.shape[0]), dtype=np.uint8)
+even_test_refined_images = mnist_test_images[even_test_label_idx, :]
+even_test_refined_labels = two_class_labels[1]*np.ones((even_test_refined_images.shape[0]), dtype=np.uint8)
+
+
+train_refined_images = np.concatenate( (odd_refined_images, even_refined_images), axis=0 )
+train_refined_labels = np.concatenate( (odd_refined_labels, even_refined_labels), axis=0 )
+test_refined_images = np.concatenate( (odd_test_refined_images, even_test_refined_images), axis=0 )
+test_refined_labels = np.concatenate( (odd_test_refined_labels, even_test_refined_labels), axis=0 )
 
 f = h5py.File(os.path.join(directory_generate_data, 'original_data.h5'), "w")
 f.create_dataset("train_refined_images", dtype='float32', data=train_refined_images)
@@ -92,5 +107,5 @@ f.close()
 
 #
 #
-#plt.imshow(np.reshape(train_refined_images[500,:], (28, 28)),)
+#plt.imshow(np.reshape(even_refined_images[10+384*4,:], (28, 28)),)
 
